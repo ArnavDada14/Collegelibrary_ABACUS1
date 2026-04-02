@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library System - Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-brand">📚 Library System - Admin</div>
+    <div class="navbar-content">
+      <div class="navbar-user">
+        <strong id="adminName">Admin</strong> | <span class="navbar-date" id="currentDate">Date</span>
+      </div>
+      <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">📚 Library</div>
+    <ul class="sidebar-nav">
+      <li><a href="#dashboard" class="nav-link active" data-section="dashboard">📊 Dashboard</a></li>
+      <li><a href="#manage-books" class="nav-link" data-section="manage-books">📖 Manage Books</a></li>
+      <li><a href="#issue-book" class="nav-link" data-section="issue-book">✏️ Issue Book</a></li>
+      <li><a href="#issued-log" class="nav-link" data-section="issued-log">📋 Issued Log</a></li>
+      <li><a href="#overdue" class="nav-link" data-section="overdue">⏰ Overdue Management</a></li>
+    </ul>
+    <div class="sidebar-logout">
+      <button id="sidebarLogoutBtn" class="btn btn-secondary btn-block">Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <!-- DASHBOARD SECTION -->
+    <section id="dashboardSection" class="section-active">
+      <div class="section-header">
+        <h1 class="section-title">Dashboard</h1>
+      </div>
+      <div id="statsGrid" class="grid grid-4">
+        <!-- Stats cards will be populated here -->
+      </div>
+    </section>
+
+    <!-- MANAGE BOOKS SECTION -->
+    <section id="manageBooksSection" class="hidden">
+      <div class="section-header">
+        <h2 class="section-title">Manage Books</h2>
+        <button id="addBookBtn" class="btn btn-primary">+ Add Book</button>
+      </div>
+      <div class="table-container">
+        <table id="booksTable">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Author</th>
+              <th>ISBN</th>
+              <th>Category</th>
+              <th>Available/Total</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="booksTableBody">
+            <!-- Books will be populated here -->
+          </tbody>
+        </table>
+      </div>
+      <div id="emptyBooks" class="empty-state hidden">
+        <div class="empty-state-icon">📖</div>
+        <h3 class="empty-state-title">No books found</h3>
+        <p class="empty-state-message">Add your first book using the button above</p>
+      </div>
+    </section>
+
+    <!-- ISSUE BOOK SECTION -->
+    <section id="issueBookSection" class="hidden">
+      <div class="section-header">
+        <h2 class="section-title">Issue Book Manually</h2>
+      </div>
+      <div class="card">
+        <form id="issueBookForm">
+          <div class="form-group">
+            <label for="studentSelect">Select Student</label>
+            <select id="studentSelect" required>
+              <option value="">Choose a student...</option>
+              <!-- Students will be populated here -->
+            </select>
+            <div class="form-error hidden" id="studentSelectError"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="bookSearch">Search Book</label>
+            <input type="text" id="bookSearch" placeholder="Search available books..." autocomplete="off">
+            <div id="bookSearchDropdown" style="display: none; border: 1px solid var(--border-color); border-top: none; max-height: 200px; overflow-y: auto;"></div>
+            <div class="form-error hidden" id="bookSearchError"></div>
+            <input type="hidden" id="selectedBookId" value="">
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-block">
+            <span id="issueBtnText">Issue Book</span>
+            <span class="spinner hidden" id="issueSpinner"></span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ISSUED LOG SECTION -->
+    <section id="issuedLogSection" class="hidden">
+      <div class="section-header">
+        <h2 class="section-title">Issued Books Log</h2>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="tabs">
+        <button class="tab-button active" data-filter="all">All</button>
+        <button class="tab-button" data-filter="issued">Issued</button>
+        <button class="tab-button" data-filter="returned">Returned</button>
+        <button class="tab-button" data-filter="overdue">Overdue</button>
+      </div>
+
+      <div class="table-container">
+        <table id="issuesLogTable">
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Book Title</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Days Overdue</th>
+              <th>Fine Amount</th>
+            </tr>
+          </thead>
+          <tbody id="issuesLogTableBody">
+            <!-- Issues will be populated here -->
+          </tbody>
+        </table>
+      </div>
+      <div id="emptyIssuesLog" class="empty-state hidden">
+        <div class="empty-state-icon">📋</div>
+        <h3 class="empty-state-title">No issued books found</h3>
+        <p class="empty-state-message">No records match the current filter</p>
+      </div>
+    </section>
+
+    <!-- OVERDUE MANAGEMENT SECTION -->
+    <section id="overdueSection" class="hidden">
+      <div class="section-header">
+        <h2 class="section-title">Overdue Management</h2>
+      </div>
+      <div id="overdueList" class="grid grid-2">
+        <!-- Overdue records will be populated here -->
+      </div>
+      <div id="emptyOverdue" class="empty-state hidden">
+        <div class="empty-state-icon">✓</div>
+        <h3 class="empty-state-title">No overdue books</h3>
+        <p class="empty-state-message">All books are within due date</p>
+      </div>
+      <div id="totalFinesSection" class="mt-4 p-3 text-center font-bold hidden">
+        <p>Total Fines Pending: <span id="totalFines" class="text-warning">₹0</span></p>
+      </div>
+    </section>
+  </div>
+
+  <!-- BOOK MODAL -->
+  <div class="modal-overlay" id="bookModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="bookModalTitle">Add New Book</h3>
+        <button type="button" class="modal-close" onclick="closeBookModal()">×</button>
+      </div>
+      <form id="bookForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="bookTitle">Title</label>
+            <input type="text" id="bookTitle" name="title" required>
+            <div class="form-error hidden" id="bookTitleError"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="bookAuthor">Author</label>
+            <input type="text" id="bookAuthor" name="author" required>
+            <div class="form-error hidden" id="bookAuthorError"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="bookISBN">ISBN</label>
+            <input type="text" id="bookISBN" name="isbn" required>
+            <div class="form-error hidden" id="bookISBNError"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="bookCategory">Category</label>
+            <select id="bookCategory" name="category" required>
+              <option value="">Select Category</option>
+              <option value="Science">Science</option>
+              <option value="History">History</option>
+              <option value="Fiction">Fiction</option>
+              <option value="Technology">Technology</option>
+            </select>
+            <div class="form-error hidden" id="bookCategoryError"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="bookTotalCopies">Total Copies</label>
+            <input type="number" id="bookTotalCopies" name="totalCopies" min="1" required>
+            <div class="form-error hidden" id="bookTotalCopiesError"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="bookDescription">Description</label>
+            <textarea id="bookDescription" name="description"></textarea>
+            <div class="form-error hidden" id="bookDescriptionError"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="bookCoverImage">Cover Image URL</label>
+            <input type="text" id="bookCoverImage" name="coverImage">
+            <div class="form-error hidden" id="bookCoverImageError"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeBookModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <span id="bookFormBtnText">Save Book</span>
+            <span class="spinner hidden" id="bookFormSpinner"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer"></div>
+
+  <!-- LOADING OVERLAY -->
+  <div class="spinner-full" id="loadingOverlay">
+    <div class="spinner"></div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

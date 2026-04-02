@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library System - Book Catalog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-brand">📚 Library System</div>
+    <div class="navbar-content">
+      <div class="navbar-user">Welcome, <strong id="studentName">Student</strong></div>
+      <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content no-sidebar">
+    <!-- SEARCH & FILTER SECTION -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label class="filter-label">Search Books</label>
+        <input type="text" id="searchInput" class="filter-input" placeholder="Search by title or author...">
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Category</label>
+        <select id="categoryFilter" class="filter-input">
+          <option value="">All Categories</option>
+          <option value="Science">Science</option>
+          <option value="History">History</option>
+          <option value="Fiction">Fiction</option>
+          <option value="Technology">Technology</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Sort By</label>
+        <select id="sortFilter" class="filter-input">
+          <option value="title">Title A-Z</option>
+          <option value="author">Author A-Z</option>
+          <option value="newest">Newest First</option>
+        </select>
+      </div>
+
+      <div class="filter-group checkbox-group">
+        <input type="checkbox" id="availableCheckbox">
+        <label for="availableCheckbox">Available Only</label>
+      </div>
+    </div>
+
+    <!-- BOOK GRID -->
+    <section>
+      <h2 class="section-title mb-3">Available Books</h2>
+      <div id="booksGrid" class="grid grid-3">
+        <!-- Books will be populated here by JavaScript -->
+      </div>
+      <div id="emptyBooks" class="empty-state hidden">
+        <div class="empty-state-icon">📖</div>
+        <h3 class="empty-state-title">No books found</h3>
+        <p class="empty-state-message">Try adjusting your search or filters</p>
+      </div>
+    </section>
+
+    <!-- MY ISSUED BOOKS SECTION -->
+    <section class="mt-4">
+      <h2 class="section-title mb-3">My Issued Books</h2>
+      <div class="table-container">
+        <table id="issuesTable">
+          <thead>
+            <tr>
+              <th>Book Title</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Days Overdue</th>
+              <th>Fine Amount</th>
+            </tr>
+          </thead>
+          <tbody id="issuesTableBody">
+            <!-- Issues will be populated here by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      <div id="emptyIssues" class="empty-state hidden">
+        <div class="empty-state-icon">📚</div>
+        <h3 class="empty-state-title">No issued books</h3>
+        <p class="empty-state-message">Start by issuing a book from the catalog above</p>
+      </div>
+      <div id="totalFineSection" class="mt-3 p-2 text-right font-bold hidden">
+        <p>Total Fine Owed: <span id="totalFine" class="text-danger">₹0</span></p>
+      </div>
+    </section>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer"></div>
+
+  <!-- LOADING OVERLAY -->
+  <div class="spinner-full" id="loadingOverlay">
+    <div class="spinner"></div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/catalog.js"></script>
+</body>
+</html>

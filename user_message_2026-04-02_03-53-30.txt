@@ -1,0 +1,266 @@
+Build a complete Library Book Issue & Digital Catalog System using HTML, CSS, Vanilla JavaScript (frontend), Node.js + Express (backend), and MongoDB with Mongoose (database).
+
+═══════════════════════════════════════════
+ PROJECT STRUCTURE
+═══════════════════════════════════════════
+
+library-system/
+├── public/
+│   ├── index.html          (login/register page)
+│   ├── admin.html          (admin dashboard)
+│   ├── catalog.html        (student book catalog)
+│   ├── css/
+│   │   └── styles.css
+│   └── js/
+│       ├── auth.js
+│       ├── catalog.js
+│       └── admin.js
+├── server/
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Book.js
+│   │   └── IssuedBook.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── books.js
+│   │   └── issues.js
+│   ├── middleware/
+│   │   └── auth.js
+│   ├── seed.js
+│   └── server.js
+├── .env
+├── package.json
+└── README.md
+
+═══════════════════════════════════════════
+ 1. INITIAL SETUP
+═══════════════════════════════════════════
+
+Initialize npm project. Install: express, mongoose, bcryptjs, jsonwebtoken, cors, dotenv, express-rate-limit.
+
+Create .env:
+  PORT=5000
+  MONGO_URI=mongodb://localhost:27017/librarydb
+  JWT_SECRET=mysecretkey123
+
+═══════════════════════════════════════════
+ 2. MONGODB MODELS
+═══════════════════════════════════════════
+
+User.js — fields: name, email, password (bcrypt hashed), role (enum: 'admin'|'student'), studentId, createdAt
+
+Book.js — fields: title, author, isbn (unique), category, totalCopies, availableCopies, description, coverImage (url string), addedAt
+
+IssuedBook.js — fields:
+  - userId (ref: User)
+  - bookId (ref: Book)
+  - issueDate (default: now)
+  - dueDate (issueDate + 14 days auto-set)
+  - returnDate (nullable)
+  - status (enum: 'issued'|'returned'|'overdue', default: 'issued')
+  - fineAmount (default: 0)
+  Add virtual: auto-calculate fine at ₹2 per day after dueDate if not returned.
+
+═══════════════════════════════════════════
+ 3. BACKEND — server.js
+═══════════════════════════════════════════
+
+- Connect to MongoDB via mongoose
+- Use cors, express.json(), dotenv
+- Apply express-rate-limit: 100 requests per 15 minutes
+- Mount routes: /api/auth, /api/books, /api/issues
+- Serve public/ folder as static files
+
+═══════════════════════════════════════════
+ 4. AUTH ROUTES — server/routes/auth.js
+═══════════════════════════════════════════
+
+POST /api/auth/register
+  - Accepts: name, email, password, studentId, role
+  - Hash password with bcryptjs
+  - Save to MongoDB, return JWT token
+
+POST /api/auth/login
+  - Validate credentials, return JWT + user info (id, name, role)
+
+GET /api/auth/me (protected)
+  - Return current user profile from JWT
+
+middleware/auth.js — verify JWT, attach user to req.user. Add role check: requireAdmin middleware.
+
+═══════════════════════════════════════════
+ 5. BOOKS ROUTES — server/routes/books.js
+═══════════════════════════════════════════
+
+GET /api/books
+  - Support query filters: ?search= (title+author), ?category=, ?available=true, ?sort=title|author|newest
+
+GET /api/books/:id — single book details
+
+POST /api/books (admin only) — add new book
+
+PUT /api/books/:id (admin only) — edit book
+
+DELETE /api/books/:id (admin only) — delete book
+
+═══════════════════════════════════════════
+ 6. ISSUE/RETURN ROUTES — server/routes/issues.js
+═══════════════════════════════════════════
+
+POST /api/issues — issue a book
+  - Check availableCopies > 0, else return error
+  - Decrement availableCopies by 1
+  - Create IssuedBook record with dueDate = today + 14 days
+
+GET /api/issues
+  - Admin: all issued books (auto-update overdue status + fine on fetch)
+  - Student: only their own issued books
+  - Fine calculation: ₹2 per day overdue
+
+PUT /api/issues/:id/return — return a book
+  - Set returnDate = today
+  - Calculate final fineAmount
+  - Increment availableCopies by 1
+  - Set status = 'returned'
+
+GET /api/issues/overdue (admin only) — all overdue records with fines
+
+═══════════════════════════════════════════
+ 7. SEED DATA — server/seed.js
+═══════════════════════════════════════════
+
+Create and run a seed script that inserts:
+  - 1 admin: admin@library.com / admin123
+  - 3 students: student1@lib.com, student2@lib.com, student3@lib.com / pass: student123
+  - 10 books across categories: Science, History, Fiction, Technology
+    (use placeholder cover image URLs from https://via.placeholder.com/150)
+
+Run with: node server/seed.js
+
+═══════════════════════════════════════════
+ 8. FRONTEND — public/index.html (Login/Register)
+═══════════════════════════════════════════
+
+- Toggle between Login and Register forms
+- Register fields: name, email, password, studentId, role (dropdown: student/admin)
+- On submit: POST to /api/auth/login or /api/auth/register
+- Store JWT + role in localStorage
+- Redirect: admin → admin.html, student → catalog.html
+- Show inline validation errors and loading spinner
+- Style: centered card, library theme — dark green (#1B4332) + gold (#D4A017) color scheme
+- Font: Google Fonts — Playfair Display for headings, Lato for body
+
+═══════════════════════════════════════════
+ 9. FRONTEND — public/catalog.html (Student Portal)
+═══════════════════════════════════════════
+
+Header: Library name + logged-in student name + Logout button
+
+Search & Filter bar:
+  - Text search input (searches title + author live on typing)
+  - Category dropdown filter
+  - "Available Only" checkbox
+
+Book Grid (CSS grid, 3-4 cols):
+  - Each card: cover image, title, author, category badge, available copies badge (green if >0, red if 0)
+  - "Issue Book" button (disabled + greyed out if 0 copies available)
+  - On issue: POST /api/issues, show success toast, refresh grid
+
+My Issued Books section (bottom):
+  - Table: book title, issue date, due date, status badge, days overdue, fine amount (red if overdue)
+  - Total fine summary row
+
+Show loading spinners on all API calls.
+Show empty state messages when no books found.
+Auto-dismiss toast notifications after 3 seconds.
+
+═══════════════════════════════════════════
+ 10. FRONTEND — public/admin.html (Admin Dashboard)
+═══════════════════════════════════════════
+
+Sidebar navigation with 5 sections:
+
+[1] Dashboard Overview
+  - 4 stat cards: Total Books, Total Students, Books Issued Today, Overdue Count
+
+[2] Manage Books
+  - Table: title, author, isbn, category, available/total copies, Edit + Delete buttons
+  - "Add Book" button → modal form with all book fields
+  - Edit opens modal pre-filled with existing data
+
+[3] Issue Book (Manual)
+  - Student dropdown (loads all students)
+  - Book search input (loads available books)
+  - Issue button → POST /api/issues
+
+[4] Issued Books Log
+  - Table: student name, book title, issue date, due date, status badge (colour-coded), fine amount
+  - Filter by status: All / Issued / Returned / Overdue
+
+[5] Overdue Management
+  - List: student name, book, days overdue, fine amount
+  - Rows with fine > ₹50 highlighted in amber
+  - Total fines owed summary at bottom
+
+All API calls include Authorization: Bearer <token> header from localStorage.
+Show loading spinners and toast notifications throughout.
+
+═══════════════════════════════════════════
+ 11. STYLES — public/css/styles.css
+═══════════════════════════════════════════
+
+- CSS variables for theme: --green-dark, --green-mid, --gold, --white, --gray-light
+- Responsive layout (mobile-friendly tables with horizontal scroll)
+- Sidebar layout for admin.html
+- Card hover effects, badge styles, modal overlay styles
+- Status badge colours: issued=blue, returned=green, overdue=red
+- Toast notification (bottom-right, slide-in animation)
+- Loading spinner (CSS-only)
+
+═══════════════════════════════════════════
+ 12. SECURITY & VALIDATION
+═══════════════════════════════════════════
+
+Backend:
+  - Validate all POST/PUT inputs (check required fields, sanitize strings)
+  - Protect admin routes with requireAdmin middleware
+  - JWT expiry: 7 days
+
+Frontend:
+  - Validate forms before submit (empty fields, email format, password min 6 chars)
+  - If localStorage has no token, redirect to index.html on protected pages
+
+═══════════════════════════════════════════
+ 13. README.md
+═══════════════════════════════════════════
+
+Include:
+  - Project title and description
+  - Tech stack
+  - Setup instructions (npm install → create .env → node server/seed.js → node server/server.js)
+  - API endpoints table (method, path, auth, description)
+  - Features list
+  - Default login credentials (from seed data)
+
+═══════════════════════════════════════════
+ BUILD ORDER
+═══════════════════════════════════════════
+
+Build in this exact order:
+1. package.json + .env + server.js (basic express + mongo connection)
+2. All 3 Mongoose models
+3. middleware/auth.js
+4. All 3 route files
+5. server/seed.js → populate DB
+6. public/css/styles.css
+7. public/index.html + public/js/auth.js
+8. public/catalog.html + public/js/catalog.js
+9. public/admin.html + public/js/admin.js
+10. README.md
+
+After building everything, confirm:
+- node server/seed.js runs without errors
+- node server/server.js starts on port 5000
+- All pages load and API calls work end-to-end
+
+and push this to https://github.com/ArnavDada14/Collegelibrary_ABACUS1.git this repo
